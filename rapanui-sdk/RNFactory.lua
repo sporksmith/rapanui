@@ -382,45 +382,37 @@ function RNFactory.createButton(image, params)
         yOffset = params.yOffset
     end
 
-    -- init of default RNButtonImage
-    local rnButtonImage = RNObject:new()
-    local rnButtonImage, deck = rnButtonImage:initWithImage2(image)
+    local function initButtonImage( image )
+        local rnObj, deck
+        if type(image) == "string" then
+            rnObj = RNObject:new()
+            rnObj, deck = rnObj:initWithImage2( image )
+        else
+            -- assume image is already an RNObject
+            rnObj = image
+        end
 
-    rnButtonImage.x = rnButtonImage.originalWidth / 2 + left
-    rnButtonImage.y = rnButtonImage.originalHeight / 2 + top
+        rnObj.x = rnObj.originalWidth / 2 + left
+        rnObj.y = rnObj.originalHeight / 2 + top
+        RNFactory.screen:addRNObject( rnObj )
 
-    RNFactory.screen:addRNObject(rnButtonImage)
-
-
-    local rnButtonImageOver
-
-    if params.imageOver ~= nil then
-
-        rnButtonImageOver = RNObject:new()
-        rnButtonImageOver, deck = rnButtonImageOver:initWithImage2(params.imageOver)
-
-        rnButtonImageOver.x = rnButtonImageOver.originalWidth / 2 + left
-        rnButtonImageOver.y = rnButtonImageOver.originalHeight / 2 + top
-
-        rnButtonImageOver:setVisible(false)
-
-        RNFactory.screen:addRNObject(rnButtonImageOver)
+        return rnObj, deck
     end
 
+    -- init of default RNButtonImage
+    local rnButtonImage
+    rnButtonImage, deck = initButtonImage( image )
+
+    local rnButtonImageOver
+    if params.imageOver ~= nil then
+        rnButtonImageOver, deck = initButtonImage( params.imageOver )
+        rnButtonImageOver:setVisible( false )
+    end
 
     local rnButtonImageDisabled
-
     if params.imageDisabled ~= nil then
-
-        rnButtonImageDisabled = RNObject:new()
-        rnButtonImageDisabled, deck = rnButtonImageDisabled:initWithImage2(params.imageDisabled)
-
-        rnButtonImageDisabled.x = rnButtonImageDisabled.originalWidth / 2 + left
-        rnButtonImageDisabled.y = rnButtonImageDisabled.originalHeight / 2 + top
-
+        rnButtonImageDisabled, deck = initButtonImage( params.imageDisabled )
         rnButtonImageDisabled:setVisible(false)
-
-        RNFactory.screen:addRNObject(rnButtonImageDisabled)
     end
 
     local rnText
