@@ -109,12 +109,14 @@ function RNText:initWithText2(text, font, size, width, height, hAlignment, vAlig
 
     self.textbox = MOAITextBox.new()
 
-    self.style = self:setStyle(font, size, 1)
+    self.style = self:setStyle(font, size, 1, { 255, 255, 255, 255 })
+    self.r = 255
+    self.g = 255
+    self.b = 255
     self.textbox:setStyle(self.style)
     self.textbox:setString(self.text)
     self.textbox:setRect(0, 0, width, height)
     self.textbox:setAlignment(hAlignment, vAlignment)
-    self:setTextColor(255, 255, 255)
     self.prop = self.textbox
     self.size = size
 
@@ -125,15 +127,16 @@ function RNText:initWithText2(text, font, size, width, height, hAlignment, vAlig
     return self, self.font
 end
 
-function RNText:setStyle(font, size, scale)
+function RNText:setStyle(font, size, scale, color)
     local style = MOAITextStyle.new()
     style:setFont(font)
     style:setSize(size)
     style:setScale(scale or 1)
+    style:setColor(color[1] / 255, color[2] / 255, color[3] / 255, color[4] / 255)
     return style;
 end
 
-function RNText:addStyle(name, font, size)
+function RNText:addStyle(name, font, size, color)
     local style = MOAITextStyle.new()
     self.stylesList[#self.stylesList + 1] = style
 
@@ -145,8 +148,13 @@ function RNText:addStyle(name, font, size)
         end
     end
 
+    if color == nil then
+        color = { 255, 255, 255, 255 }
+    end
+
     style:setFont(font)
     style:setSize(size)
+    style:setColor(color[1] / 255, color[2] / 255, color[3] / 255, color[4] / 255)
 
     self.textbox:setStyle(name, style)
 
@@ -163,6 +171,9 @@ end
 
 function RNText:setText(text)
     self.textbox:setString(text)
+    if self.text ~= text then
+        self.text = text
+    end
 end
 
 function RNText:spool()

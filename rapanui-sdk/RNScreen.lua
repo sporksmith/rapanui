@@ -78,6 +78,8 @@ function RNScreen:addRNObject(object, mode)
     object:setIDInScreen(self.numSprites)
 
     object:getProp().rnObjectId = self.numSprites
+
+    object:getProp().RNObject = object
 end
 
 function RNScreen:removeRNObject(object)
@@ -102,41 +104,39 @@ end
 
 function RNScreen:getObjectWithHighestLevelOn(x, y)
 
-    local ofx = RNFactory.screenXOffset
-    local ofy = RNFactory.screenYOffset
-
-    local gx = config.graphicsDesign.w
-    local gy = config.graphicsDesign.h
-    local tx = RNFactory.width
-    local ty = RNFactory.height
-
-    --screen aspect without calculating offsets
-    local Ax = gx / (tx - ofx * 2)
-    local Ay = gy / (ty - ofy * 2)
-
-    --screen aspect calculating offsets
-    local AspectX = (gx + ofx * 2 * Ax) / tx
-    local AspectY = (gy + ofy * 2 * Ay) / ty
 
 
 
     local props
-    if config.stretch == true then
-        local toGetX, toGetY = (x - ofx) * Ax, (y - ofy) * Ay
-        --        print(x, y, toGetX, toGetY)
-        props = { self.mainPartition:propListForPoint(toGetX, toGetY, 0, MOAILayer.SORT_PRIORITY_DESCENDING) }
+    if config.stretch.status == true then
+        if config.stretch.letterbox == true then
+            local toGetX, toGetY = (x - RNFactory.ofx) * RNFactory.Ax, (y - RNFactory.ofy) * RNFactory.Ay
+            props = { self.mainPartition:propListForPoint(toGetX, toGetY + RNFactory.statusBarHeight * y / RNFactory.height, 0, MOAILayer.SORT_PRIORITY_DESCENDING) }
+        else
+            local toGetX, toGetY = (x - RNFactory.ofx) * RNFactory.Ax, (y - RNFactory.ofy) * RNFactory.Ay
+            props = { self.mainPartition:propListForPoint(toGetX, toGetY + RNFactory.statusBarHeight * y / RNFactory.height, 0, MOAILayer.SORT_PRIORITY_DESCENDING) }
+        end
     else
-        props = { self.mainPartition:propListForPoint(x, y, 0, MOAILayer.SORT_PRIORITY_DESCENDING) }
+        props = { self.mainPartition:propListForPoint(x, y + RNFactory.statusBarHeight * y / RNFactory.height, 0, MOAILayer.SORT_PRIORITY_DESCENDING) }
     end
 
-    for i, p in ipairs(props) do
-        for j, k in ipairs(self.sprites) do
-            if k.prop == p then
-                if k.touchable == true then
-                    --                    print(k.name)
-                    return k
-                end
-            end
+    --Old, deprecated worst way to do this.
+    --    for i, p in ipairs(props) do
+    --        for j, k in ipairs(self.sprites) do
+    --            if k.prop == p then
+    --                if k.touchable == true then
+    --                    --                    print(k.name)
+    --                    return k
+    --                end
+    --            end
+    --        end
+    --    end
+
+
+    for i = 1, #props do
+        local currentProp = props[i]
+        if currentProp.RNObject.touchable == true then
+            return currentProp.RNObject
         end
     end
 end

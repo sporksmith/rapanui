@@ -87,56 +87,140 @@ function RNFactory.init()
 
     --if we have to stretch graphics to screen
 
-    if config.stretch == true then
-        local SCREEN_UNITS_X, SCREEN_UNITS_Y
-        SCREEN_UNITS_X = config.graphicsDesign.w
-        SCREEN_UNITS_Y = config.graphicsDesign.h
+    if config.stretch.status == true then
+        if config.stretch.letterbox == true then
+            local SCREEN_UNITS_X, SCREEN_UNITS_Y
+            SCREEN_UNITS_X = config.stretch.graphicsDesign.w
+            SCREEN_UNITS_Y = config.stretch.graphicsDesign.h
 
-        local SCREEN_X_OFFSET = 0
-        local SCREEN_Y_OFFSET = 0
+            local SCREEN_X_OFFSET = 0
+            local SCREEN_Y_OFFSET = 0
 
-        local DEVICE_WIDTH, DEVICE_HEIGHT, gameAspect, realAspect
-        DEVICE_WIDTH, DEVICE_HEIGHT = RNFactory.width, RNFactory.height
-
-
-        local gameAspect = SCREEN_UNITS_Y / SCREEN_UNITS_X
-        local realAspect = DEVICE_HEIGHT / DEVICE_WIDTH
+            local DEVICE_WIDTH, DEVICE_HEIGHT, gameAspect, realAspect
+            DEVICE_WIDTH, DEVICE_HEIGHT = RNFactory.width, RNFactory.height
 
 
-        local SCREEN_WIDTH, SCREEN_HEIGHT
+            local gameAspect = SCREEN_UNITS_Y / SCREEN_UNITS_X
+            local realAspect = DEVICE_HEIGHT / DEVICE_WIDTH
 
-        if realAspect > gameAspect then
-            SCREEN_WIDTH = DEVICE_WIDTH
-            SCREEN_HEIGHT = DEVICE_WIDTH * gameAspect
+
+            local SCREEN_WIDTH, SCREEN_HEIGHT
+
+            if config.stretch.drawOnBlackBars then
+                if realAspect > gameAspect then
+                    SCREEN_UNITS_Y = SCREEN_UNITS_X * realAspect
+                else
+                    SCREEN_UNITS_X = SCREEN_UNITS_Y / realAspect
+                end
+
+                SCREEN_WIDTH = DEVICE_WIDTH
+                SCREEN_HEIGHT = DEVICE_HEIGHT
+            else
+
+                if realAspect > gameAspect then
+                    SCREEN_WIDTH = DEVICE_WIDTH
+                    SCREEN_HEIGHT = DEVICE_WIDTH * gameAspect
+                else
+                    SCREEN_WIDTH = DEVICE_HEIGHT / gameAspect
+                    SCREEN_HEIGHT = DEVICE_HEIGHT
+                end
+
+                if SCREEN_WIDTH < DEVICE_WIDTH then
+                    SCREEN_X_OFFSET = (DEVICE_WIDTH - SCREEN_WIDTH) * 0.5
+                end
+
+                if SCREEN_HEIGHT < DEVICE_HEIGHT then
+                    SCREEN_Y_OFFSET = (DEVICE_HEIGHT - SCREEN_HEIGHT) * 0.5
+                end
+            end
+
+
+            RNFactory.screen.viewport:setSize(SCREEN_X_OFFSET, SCREEN_Y_OFFSET, SCREEN_X_OFFSET + SCREEN_WIDTH, SCREEN_Y_OFFSET + SCREEN_HEIGHT)
+            RNFactory.screen.viewport:setScale(SCREEN_UNITS_X, -SCREEN_UNITS_Y)
+
+            RNFactory.outWidth = config.stretch.graphicsDesign.w
+            RNFactory.outHeight = config.stretch.graphicsDesign.h
+
+            RNFactory.screenXOffset = SCREEN_X_OFFSET
+            RNFactory.screenYOffset = SCREEN_Y_OFFSET
+
+            RNFactory.screenUnitsX = SCREEN_UNITS_X
+            RNFactory.screenUnitsY = SCREEN_UNITS_Y
         else
-            SCREEN_WIDTH = DEVICE_HEIGHT / gameAspect
-            SCREEN_HEIGHT = DEVICE_HEIGHT
+            local SCREEN_UNITS_X, SCREEN_UNITS_Y
+            SCREEN_UNITS_X = config.stretch.graphicsDesign.w
+            SCREEN_UNITS_Y = config.stretch.graphicsDesign.h
+
+            local DEVICE_WIDTH, DEVICE_HEIGHT, gameAspect, realAspect
+            DEVICE_WIDTH, DEVICE_HEIGHT = RNFactory.width, RNFactory.height
+
+
+            local gameAspect = SCREEN_UNITS_Y / SCREEN_UNITS_X
+            local realAspect = DEVICE_HEIGHT / DEVICE_WIDTH
+
+
+            local SCREEN_WIDTH, SCREEN_HEIGHT
+
+            if realAspect > gameAspect then
+                SCREEN_WIDTH = DEVICE_WIDTH
+                SCREEN_HEIGHT = DEVICE_WIDTH * gameAspect
+            else
+                SCREEN_WIDTH = DEVICE_HEIGHT / gameAspect
+                SCREEN_HEIGHT = DEVICE_HEIGHT
+            end
+
+
+            RNFactory.screen.viewport:setSize(0, 0, RNFactory.width, RNFactory.height)
+            RNFactory.screen.viewport:setScale(SCREEN_UNITS_X, -SCREEN_UNITS_Y)
+
+            RNFactory.outWidth = config.stretch.graphicsDesign.w
+            RNFactory.outHeight = config.stretch.graphicsDesign.h
+
+            RNFactory.screenXOffset = 0
+            RNFactory.screenYOffset = 0
+
+            RNFactory.screenUnitsX = SCREEN_UNITS_X
+            RNFactory.screenUnitsY = SCREEN_UNITS_Y
         end
-
-        if SCREEN_WIDTH < DEVICE_WIDTH then
-            SCREEN_X_OFFSET = (DEVICE_WIDTH - SCREEN_WIDTH) * 0.5
-        end
-
-        if SCREEN_HEIGHT < DEVICE_HEIGHT then
-            SCREEN_Y_OFFSET = (DEVICE_HEIGHT - SCREEN_HEIGHT) * 0.5
-        end
-
-        RNFactory.screen.viewport:setSize(SCREEN_X_OFFSET, SCREEN_Y_OFFSET, SCREEN_X_OFFSET + SCREEN_WIDTH, SCREEN_Y_OFFSET + SCREEN_HEIGHT)
-        RNFactory.screen.viewport:setScale(SCREEN_UNITS_X, -SCREEN_UNITS_Y)
-
-        RNFactory.outWidth = config.graphicsDesign.w
-        RNFactory.outHeight = config.graphicsDesign.h
-
-        RNFactory.screenXOffset = SCREEN_X_OFFSET
-        RNFactory.screenYOffset = SCREEN_Y_OFFSET
-
-        RNFactory.screenUnitsX = SCREEN_UNITS_X
-        RNFactory.screenUnitsY = SCREEN_UNITS_Y
     end
+
+    RNFactory.calculateTouchValues()
 
 
 
     RNInputManager.setGlobalRNScreen(screen)
+end
+
+function RNFactory.calculateTouchValues()
+
+
+    local ofx = RNFactory.screenXOffset
+    local ofy = RNFactory.screenYOffset
+
+    local gx = RNFactory.screenUnitsX
+    local gy = RNFactory.screenUnitsY
+    local tx = RNFactory.width
+    local ty = RNFactory.height
+
+    --screen aspect without calculating offsets
+    local Ax = gx / (tx - ofx * 2)
+    local Ay = gy / (ty - ofy * 2)
+
+    local statusBar = 0
+
+    if config.iosStatusBar then
+        if MOAIEnvironment.iosRetinaDisplay then
+            statusBar = 40
+        else
+            statusBar = 20
+        end
+    end
+
+    RNFactory.statusBarHeight = statusBar
+    RNFactory.ofx = ofx
+    RNFactory.ofy = ofy
+    RNFactory.Ax = Ax
+    RNFactory.Ay = Ay
 end
 
 -- extra method call to setup the underlying system
@@ -272,14 +356,14 @@ function RNFactory.createButton(image, params)
         end
 
         --[[
-        if (params.height ~= nil) then
-            height = params.height
-        end
+      if (params.height ~= nil) then
+          height = params.height
+      end
 
-        if (params.width ~= nil) then
-            width = params.width
-        end
-          ]] --
+      if (params.width ~= nil) then
+          width = params.width
+      end
+        ]] --
 
         if (params.verticalAlignment ~= nil) then
             vAlignment = params.verticalAlignment
@@ -530,12 +614,12 @@ end
 function RNFactory.createBitmapText(text, params)
 
     --[[ params.image
-    params.charset
-    params.top
-    params.left
-    params.letterWidth
-    params.letterHeight
-         ]]
+params.charset
+params.top
+params.left
+params.letterWidth
+params.letterHeight
+    ]]
 
     local charcodes, endsizex, sizey, sizex, left, top, scaleX, scaleY, charWidth, charHeight, image, parentGroup
 
