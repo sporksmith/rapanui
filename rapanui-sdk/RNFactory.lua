@@ -78,7 +78,7 @@ function RNFactory.init()
     RNFactory.width = lwidth
     RNFactory.height = lheight
 
-    contentlwidth = lwidth
+    contentWidth = lwidth
     contentHeight = lheight
 
     RNFactory.outWidth = RNFactory.width
