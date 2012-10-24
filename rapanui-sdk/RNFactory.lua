@@ -65,7 +65,7 @@ function RNFactory.init()
 
     screenX, screenY = nil
 
-
+    local name = rawget(_G, 'name') -- looking for *global* 'name'
     if name == nil then
         name = "mainwindow"
     end
