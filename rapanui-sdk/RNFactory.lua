@@ -404,7 +404,7 @@ function RNFactory.createButton(image, params)
     end
 
     -- init of default RNButtonImage
-    local rnButtonImage
+    local rnButtonImage, deck
     rnButtonImage, deck = initButtonImage( image )
 
     local rnButtonImageOver
