@@ -20,7 +20,6 @@ contentHeight = nil
 contentWidth = nil
 contentScaleX = nil
 contentScaleY = nil
-contentWidth = nil
 screenOriginX = nil
 screenOriginY = nil
 statusBarHeight = nil
@@ -63,9 +62,9 @@ function RNFactory.init()
         screenlwidth, screenHeight = screenHeight, screenlwidth
     end
 
-    landscape, device, sizes, screenX, screenY = nil
+    screenX, screenY = nil
 
-
+    local name = rawget(_G, 'name') -- looking for *global* 'name'
     if name == nil then
         name = "mainwindow"
     end
@@ -78,7 +77,7 @@ function RNFactory.init()
     RNFactory.width = lwidth
     RNFactory.height = lheight
 
-    contentlwidth = lwidth
+    contentWidth = lwidth
     contentHeight = lheight
 
     RNFactory.outWidth = RNFactory.width
@@ -193,7 +192,7 @@ function RNFactory.init()
 
 
 
-    RNInputManager.setGlobalRNScreen(screen)
+    RNInputManager.setGlobalRNScreen(RNFactory.screen)
 end
 
 function RNFactory.calculateTouchValues()
@@ -405,7 +404,7 @@ function RNFactory.createButton(image, params)
     end
 
     -- init of default RNButtonImage
-    local rnButtonImage
+    local rnButtonImage, deck
     rnButtonImage, deck = initButtonImage( image )
 
     local rnButtonImageOver
@@ -619,8 +618,7 @@ params.letterHeight
     ]]
 
     local charcodes, endsizex, sizey, sizex, left, top, scaleX, scaleY, charWidth, charHeight, image, parentGroup
-
-
+    local hAlignment, vAlignment
 
     if params.image ~= nil then
         image = params.image
@@ -650,6 +648,14 @@ params.letterHeight
         parentGroup = params.parentGroup
     else
         parentGroup = RNFactory.mainGroup
+    end
+
+    if params.hAlignment ~= nil then
+        hAlignment = params.hAlignment
+    end
+
+    if params.vAlignment ~= nil then
+        vAlignment = params.vAlignment
     end
 
     local o = RNBitmapText:new()
