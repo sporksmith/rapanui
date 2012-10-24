@@ -192,7 +192,7 @@ function RNFactory.init()
 
 
 
-    RNInputManager.setGlobalRNScreen(screen)
+    RNInputManager.setGlobalRNScreen(RNFactory.screen)
 end
 
 function RNFactory.calculateTouchValues()
